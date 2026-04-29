@@ -198,56 +198,20 @@
       people[email].activities[act].mins += mins;
     });
 
-    var sorted = Object.values(people).sort(function(a, b) {
-          if (b.totalMins !== a.totalMins) return b.totalMins - a.totalMins;
-          return b.totalDist - a.totalDist;
-        });
-        var currentRank = 1;
-        sorted.forEach(function(p, i) {
-          if (i === 0) {
-            p.rank = 1;
-          } else if (p.totalMins === sorted[i - 1].totalMins) {
-            p.rank = sorted[i - 1].rank;
-          } else {
-            p.rank = i + 1;
-          }
-        });
-        return sorted;
+    var sorted = Object.values(people).sort(function(a, b) { return b.totalMins - a.totalMins; });
+    sorted.forEach(function(p, i) { p.rank = i + 1; });
+    return sorted;
   }
 
   function processCompanyFromRollup(rows) {
-    var companies = rows.map(function(r) {
-          return {
-            team: r[COL_ROLLUP_TEAM] || "",
-            distance: r[COL_ROLLUP_DISTANCE] || "0",
-            minutes: r[COL_ROLLUP_MINUTES] || "0"
-          };
-        }).filter(function(c) { return c.team; });
-    
-        companies.sort(function(a, b) {
-          var minsA = parseFloat(a.minutes) || 0;
-          var minsB = parseFloat(b.minutes) || 0;
-          if (minsB !== minsA) return minsB - minsA;
-          var distA = parseFloat(a.distance) || 0;
-          var distB = parseFloat(b.distance) || 0;
-          return distB - distA;
-        });
-    
-        companies.forEach(function(c, i) {
-          if (i === 0) {
-            c.rank = 1;
-          } else {
-            var prevMins = parseFloat(companies[i - 1].minutes) || 0;
-            var currMins = parseFloat(c.minutes) || 0;
-            if (currMins === prevMins) {
-              c.rank = companies[i - 1].rank;
-            } else {
-              c.rank = i + 1;
-            }
-          }
-        });
-    
-        return companies;
+    return rows.map(function(r, i) {
+      return {
+        rank: i + 1,
+        team: r[COL_ROLLUP_TEAM] || "",
+        distance: r[COL_ROLLUP_DISTANCE] || "0",
+        minutes: r[COL_ROLLUP_MINUTES] || "0"
+      };
+    }).filter(function(c) { return c.team; });
   }
 
   function badge(rank) {
