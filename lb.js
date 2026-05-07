@@ -23,7 +23,8 @@
     "merck":                        "#007A73",
     "beone":                        "#D52B1E",
     "regeneron":                    "#015C9E",
-    "genmab":                       "#008C8A"
+    "genmab":                       "#008C8A",
+    "J. O'Brien Co.":               "#29316E"
   };
 
   function getCompanyColor(name) {
