@@ -24,7 +24,8 @@
     "beone":                        "#D52B1E",
     "regeneron":                    "#015C9E",
     "genmab":                       "#008C8A",
-    "J. O'Brien Co.":               "#29316E"
+    "J. O'Brien Co.":               "#29316E",
+    "Crossroads4Hope":              "792E8A"
   };
 
   function getCompanyColor(name) {
