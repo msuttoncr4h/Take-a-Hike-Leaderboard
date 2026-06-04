@@ -216,7 +216,7 @@
           } else if (p.totalMins === sorted[i - 1].totalMins) {
             p.rank = sorted[i - 1].rank;
           } else {
-            p.rank = i + 1;
+            p.rank = sorted[i - 1].rank + 1;
           }
         });
         return sorted;
@@ -250,7 +250,7 @@
             if (currMins === prevMins) {
               c.rank = companies[i - 1].rank;
             } else {
-              c.rank = i + 1;
+              c.rank = companies[i - 1].rank + 1;
             }
           }
         });
@@ -270,6 +270,13 @@
   }
 
   var REFRESH_NOTICE = '<div class="lb-notice">Recently submitted activities may take a few minutes to appear on the leaderboard. Refresh the page to see the latest results.</div>';
+
+  function fmtNum(n, decimals) {
+    var d = decimals || 0;
+    var parts = n.toFixed(d).split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return parts.join(".");
+  }
 
   function blankIndividualRows() {
     var h = '';
@@ -308,9 +315,9 @@
           '<td><strong>' + p.name + '</strong></td>' +
           '<td class="lb-hide-m">' + p.team + '</td>' +
           '<td><strong>All Activities</strong></td>' +
-          '<td class="lb-num"><strong>' + p.totalSteps.toFixed(0) + '</strong></td>' +
-          '<td class="lb-num"><strong>' + p.totalDist.toFixed(1) + '</strong></td>' +
-          '<td class="lb-primary"><strong>' + p.totalMins.toFixed(0) + '</strong></td></tr>';
+          '<td class="lb-num"><strong>' + fmtNum(p.totalSteps, 0) + '</strong></td>' +
+          '<td class="lb-num"><strong>' + fmtNum(p.totalDist, 1) + '</strong></td>' +
+          '<td class="lb-primary"><strong>' + fmtNum(p.totalMins, 0) + '</strong></td></tr>';
 
         Object.keys(p.activities)
           .sort(function(a, b) { return p.activities[b].mins - p.activities[a].mins; })
@@ -318,9 +325,9 @@
             var d = p.activities[act];
             h += '<tr class="lb-detail"><td></td><td></td><td class="lb-hide-m"></td>' +
               '<td>' + dot(act) + act + '</td>' +
-              '<td class="lb-num">' + d.steps.toFixed(0) + '</td>' +
-              '<td class="lb-num">' + d.dist.toFixed(1) + '</td>' +
-              '<td class="lb-num" style="color:#FF8321">' + d.mins.toFixed(0) + '</td></tr>';
+              '<td class="lb-num">' + fmtNum(d.steps, 0) + '</td>' +
+              '<td class="lb-num">' + fmtNum(d.dist, 1) + '</td>' +
+              '<td class="lb-num" style="color:#FF8321">' + fmtNum(d.mins, 0) + '</td></tr>';
           });
       });
     }
@@ -349,9 +356,9 @@
         h += '<tr class="lb-co" style="border-left:3px solid ' + clr + '">' +
           '<td>' + badge(co.rank) + '</td>' +
           '<td><div class="lb-co-name"><span class="lb-co-bar" style="background:' + clr + '"></span>' + co.team + '</div></td>' +
-          '<td class="lb-num lb-muted">' + co.steps + '</td>' +
-          '<td class="lb-num lb-muted">' + co.distance + '</td>' +
-          '<td class="lb-primary">' + co.minutes + '</td></tr>';
+          '<td class="lb-num lb-muted">' + fmtNum(parseFloat(co.steps) || 0, 0) + '</td>' +
+          '<td class="lb-num lb-muted">' + fmtNum(parseFloat(co.distance) || 0, 1) + '</td>' +
+          '<td class="lb-primary">' + fmtNum(parseFloat(co.minutes) || 0, 0) + '</td></tr>';
       });
 
       var totalDist = 0;
@@ -366,9 +373,9 @@
       h += '<tr class="lb-summary" style="border-top:2px solid #FF8321">' +
         '<td></td>' +
         '<td><strong>All Companies</strong></td>' +
-        '<td class="lb-num lb-muted"><strong>' + totalSteps.toFixed(0) + '</strong></td>' +
-        '<td class="lb-num lb-muted"><strong>' + totalDist.toFixed(1) + '</strong></td>' +
-        '<td class="lb-primary"><strong>' + totalMins.toFixed(0) + '</strong></td></tr>';
+        '<td class="lb-num lb-muted"><strong>' + fmtNum(totalSteps, 0) + '</strong></td>' +
+        '<td class="lb-num lb-muted"><strong>' + fmtNum(totalDist, 1) + '</strong></td>' +
+        '<td class="lb-primary"><strong>' + fmtNum(totalMins, 0) + '</strong></td></tr>';
     }
 
     return h + '</tbody></table></div>';
