@@ -11,10 +11,12 @@
   var COL_TEAM     = "Team";
   var COL_ACTIVITY = "Activity Type";
   var COL_DISTANCE = "Distance";
+  var COL_STEPS    = "Step";
   var COL_MINUTES  = "Minutes Active";
 
   var COL_ROLLUP_TEAM     = "Team";
   var COL_ROLLUP_DISTANCE = "Total Distance";
+  var COL_ROLLUP_STEPS    = "Total Steps";
   var COL_ROLLUP_MINUTES  = "Total Minutes";
 
   var COMPANY_COLORS = {
@@ -185,19 +187,22 @@
       var email = (r[COL_EMAIL] || "").toLowerCase().trim();
       if (!email) return;
       if (!people[email]) {
-        people[email] = { name: r[COL_NAME], team: r[COL_TEAM], activities: {}, totalDist: 0, totalMins: 0 };
+        people[email] = { name: r[COL_NAME], team: r[COL_TEAM], activities: {}, totalDist: 0, totalSteps: 0, totalMins: 0 };
       }
       if (r[COL_NAME]) people[email].name = r[COL_NAME];
 
-      var dist = parseFloat(r[COL_DISTANCE]) || 0;
-      var mins = parseFloat(r[COL_MINUTES]) || 0;
-      people[email].totalDist += dist;
-      people[email].totalMins += mins;
+      var dist  = parseFloat(r[COL_DISTANCE]) || 0;
+      var steps = parseFloat(r[COL_STEPS]) || 0;
+      var mins  = parseFloat(r[COL_MINUTES]) || 0;
+      people[email].totalDist  += dist;
+      people[email].totalSteps += steps;
+      people[email].totalMins  += mins;
 
       var act = r[COL_ACTIVITY] || "Other";
-      if (!people[email].activities[act]) people[email].activities[act] = { dist: 0, mins: 0 };
-      people[email].activities[act].dist += dist;
-      people[email].activities[act].mins += mins;
+      if (!people[email].activities[act]) people[email].activities[act] = { dist: 0, steps: 0, mins: 0 };
+      people[email].activities[act].dist  += dist;
+      people[email].activities[act].steps += steps;
+      people[email].activities[act].mins  += mins;
     });
 
     var sorted = Object.values(people).sort(function(a, b) {
@@ -222,6 +227,7 @@
           return {
             team: r[COL_ROLLUP_TEAM] || "",
             distance: r[COL_ROLLUP_DISTANCE] || "0",
+            steps: r[COL_ROLLUP_STEPS] || "0",
             minutes: r[COL_ROLLUP_MINUTES] || "0"
           };
         }).filter(function(c) { return c.team; });
@@ -268,7 +274,7 @@
   function blankIndividualRows() {
     var h = '';
     for (var i = 0; i < 5; i++) {
-      h += '<tr><td>&nbsp;</td><td>&nbsp;</td><td class="lb-hide-m">&nbsp;</td><td>&nbsp;</td><td class="lb-num">&nbsp;</td><td class="lb-num">&nbsp;</td></tr>';
+      h += '<tr><td>&nbsp;</td><td>&nbsp;</td><td class="lb-hide-m">&nbsp;</td><td>&nbsp;</td><td class="lb-num">&nbsp;</td><td class="lb-num">&nbsp;</td><td class="lb-num">&nbsp;</td></tr>';
     }
     return h;
   }
@@ -276,7 +282,7 @@
   function blankCompanyRows() {
     var h = '';
     for (var i = 0; i < 5; i++) {
-      h += '<tr><td>&nbsp;</td><td>&nbsp;</td><td class="lb-num lb-muted">&nbsp;</td><td class="lb-primary">&nbsp;</td></tr>';
+      h += '<tr><td>&nbsp;</td><td>&nbsp;</td><td class="lb-num lb-muted">&nbsp;</td><td class="lb-num lb-muted">&nbsp;</td><td class="lb-primary">&nbsp;</td></tr>';
     }
     return h;
   }
@@ -290,7 +296,7 @@
 
     h += '<div class="lb-card"><table><thead><tr>' +
       '<th style="width:40px">Rank</th><th>Name</th><th class="lb-hide-m">Team</th>' +
-      '<th>Activity</th><th class="lb-num">Distance (mi)</th><th class="lb-num">Minutes</th>' +
+      '<th>Activity</th><th class="lb-num">Steps</th><th class="lb-num">Distance (mi)</th><th class="lb-num lb-primary">Minutes ▼</th>' +
       '</tr></thead><tbody>';
 
     if (!people || !people.length) {
@@ -302,8 +308,9 @@
           '<td><strong>' + p.name + '</strong></td>' +
           '<td class="lb-hide-m">' + p.team + '</td>' +
           '<td><strong>All Activities</strong></td>' +
+          '<td class="lb-num"><strong>' + p.totalSteps.toFixed(0) + '</strong></td>' +
           '<td class="lb-num"><strong>' + p.totalDist.toFixed(1) + '</strong></td>' +
-          '<td class="lb-num"><strong>' + p.totalMins.toFixed(0) + '</strong></td></tr>';
+          '<td class="lb-primary"><strong>' + p.totalMins.toFixed(0) + '</strong></td></tr>';
 
         Object.keys(p.activities)
           .sort(function(a, b) { return p.activities[b].mins - p.activities[a].mins; })
@@ -311,8 +318,9 @@
             var d = p.activities[act];
             h += '<tr class="lb-detail"><td></td><td></td><td class="lb-hide-m"></td>' +
               '<td>' + dot(act) + act + '</td>' +
+              '<td class="lb-num">' + d.steps.toFixed(0) + '</td>' +
               '<td class="lb-num">' + d.dist.toFixed(1) + '</td>' +
-              '<td class="lb-num">' + d.mins.toFixed(0) + '</td></tr>';
+              '<td class="lb-num" style="color:#FF8321">' + d.mins.toFixed(0) + '</td></tr>';
           });
       });
     }
@@ -329,6 +337,7 @@
 
     h += '<div class="lb-card"><table><thead><tr>' +
       '<th style="width:40px">Rank</th><th>Company</th>' +
+      '<th class="lb-num lb-muted">Total Steps</th>' +
       '<th class="lb-num lb-muted">Total Distance (mi)</th>' +
       '<th class="lb-primary">Total Minutes ▼</th></tr></thead><tbody>';
 
@@ -340,20 +349,24 @@
         h += '<tr class="lb-co" style="border-left:3px solid ' + clr + '">' +
           '<td>' + badge(co.rank) + '</td>' +
           '<td><div class="lb-co-name"><span class="lb-co-bar" style="background:' + clr + '"></span>' + co.team + '</div></td>' +
+          '<td class="lb-num lb-muted">' + co.steps + '</td>' +
           '<td class="lb-num lb-muted">' + co.distance + '</td>' +
           '<td class="lb-primary">' + co.minutes + '</td></tr>';
       });
 
       var totalDist = 0;
+      var totalSteps = 0;
       var totalMins = 0;
       companies.forEach(function(co) {
-        totalDist += parseFloat(co.distance) || 0;
-        totalMins += parseFloat(co.minutes) || 0;
+        totalDist  += parseFloat(co.distance) || 0;
+        totalSteps += parseFloat(co.steps) || 0;
+        totalMins  += parseFloat(co.minutes) || 0;
       });
 
       h += '<tr class="lb-summary" style="border-top:2px solid #FF8321">' +
         '<td></td>' +
         '<td><strong>All Companies</strong></td>' +
+        '<td class="lb-num lb-muted"><strong>' + totalSteps.toFixed(0) + '</strong></td>' +
         '<td class="lb-num lb-muted"><strong>' + totalDist.toFixed(1) + '</strong></td>' +
         '<td class="lb-primary"><strong>' + totalMins.toFixed(0) + '</strong></td></tr>';
     }
