@@ -11,7 +11,7 @@
   var COL_TEAM     = "Team";
   var COL_ACTIVITY = "Activity Type";
   var COL_DISTANCE = "Distance";
-  var COL_STEPS    = "Step";
+  var COL_STEPS    = "Steps";
   var COL_MINUTES  = "Minutes Active";
 
   var COL_ROLLUP_TEAM     = "Team";
